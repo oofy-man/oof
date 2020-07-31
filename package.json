@@ -1,0 +1,14 @@
+{
+  "name": "oof",
+  "version": "0.0.1",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^6.0.0",
+    "console.table": "^0.10.0",
+    "iconv-lite": "^0.6.2",
+    "node-fetch": "^2.6.0"
+  },
+  "bin": {
+    "oof": "bin/oof.js"
+  }
+}
