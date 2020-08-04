@@ -3,9 +3,11 @@
   "version": "0.0.1",
   "license": "MIT",
   "dependencies": {
+    "colors": "^1.4.0",
     "commander": "^6.0.0",
     "console.table": "^0.10.0",
     "iconv-lite": "^0.6.2",
+    "inquirer": "^7.3.3",
     "node-fetch": "^2.6.0"
   },
   "bin": {
