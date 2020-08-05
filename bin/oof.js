@@ -40,7 +40,7 @@ program
     if (!codes.length) {
       while (true) {
         await fetchDetailByCodes(config.cart)
-        await sleep(5000)
+        await sleep(1000)
       }
     } else {
       inquirer
@@ -63,7 +63,7 @@ program
           }
           while (true) {
             await fetchDetailByCodes(codes)
-            await sleep(5000)
+            await sleep(1000)
           }
         })
     }
@@ -115,6 +115,11 @@ async function fetchDetailByCodes(codes) {
           : attrArray[key]
       }
     }
+
+    const rate = (((attrArray[3] - attrArray[2]) / attrArray[2]) * 100).toFixed(
+      2,
+    )
+    row['涨幅'] = rate >= 0 ? `${rate}%`.red : `${rate}%`.green
     table.push(row)
   }
   process.stdout.write(
