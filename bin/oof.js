@@ -40,7 +40,7 @@ program
     if (!codes.length) {
       while (true) {
         await fetchDetailByCodes(config.cart)
-        await sleep(1000)
+        await sleep(2000)
       }
     } else {
       inquirer
@@ -63,7 +63,7 @@ program
           }
           while (true) {
             await fetchDetailByCodes(codes)
-            await sleep(1000)
+            await sleep(2000)
           }
         })
     }
@@ -86,23 +86,31 @@ program.parse(process.argv)
 
 async function fetchDetailByCodes(codes) {
   const table = []
-  for (let i = 0; i < codes.length; i++) {
-    const code = codes[i]
-    let prefix
-    if (CODE_MATCHER[EMUM_EXCHANGE.SZ].test(code)) {
-      prefix = 'sz'
-    } else if (CODE_MATCHER[EMUM_EXCHANGE.SH].test(code)) {
-      prefix = 'sh'
-    }
+  codes = codes
+    .map(code => {
+      let prefix
+      if (CODE_MATCHER[EMUM_EXCHANGE.SZ].test(code)) {
+        prefix = 'sz'
+      } else if (CODE_MATCHER[EMUM_EXCHANGE.SH].test(code)) {
+        prefix = 'sh'
+      }
 
-    if (!prefix) {
-      return console.log('code无效')
-    }
+      if (!prefix) {
+        console.log('code无效')
+        return null
+      }
 
-    const api = `http://hq.sinajs.cn/list=${prefix}${code}`
-    const response = await fetch(api)
-    const buffer = await response.buffer()
-    const source = iconv.decode(buffer, 'GB18030')
+      return `${prefix}${code}`
+    })
+    .filter(Boolean)
+
+  const api = `https://hq.sinajs.cn/list=${codes.join(',')}`
+  const response = await fetch(api)
+  const buffer = await response.buffer()
+  const source = iconv.decode(buffer, 'GB18030')
+  const sources = source.split(';\n').filter(Boolean)
+
+  sources.forEach(source => {
     source.match(/"(.*)"/)
     const attrArray = RegExp.$1.split(',')
 
@@ -121,7 +129,8 @@ async function fetchDetailByCodes(codes) {
     )
     row['涨幅'] = rate >= 0 ? `${rate}%`.red : `${rate}%`.green
     table.push(row)
-  }
+  })
+
   process.stdout.write(
     process.platform === 'win32' ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H',
   )
