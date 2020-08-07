@@ -9,6 +9,7 @@ const inquirer = require('inquirer')
 const { write, read } = require('./fs')
 const fs = require('fs')
 const path = require('path')
+const { option } = require('commander')
 
 const USER_HOME = process.env.HOME || process.env.USERPROFILE
 const CONFIG_DIR = path.resolve(USER_HOME, './.oof')
@@ -73,10 +74,15 @@ program
   .command('cart')
   .description('codes cart')
   .option('-l, --list', 'list cart codes')
+  .option('-d, --delete <codes...>')
   .action(async options => {
     const config = await getConfig()
     if (options.list) {
       console.log(`cart codes: ${config.cart.toString().green}`.grey)
+    } else if (options.delete) {
+      const deleteCodes = options.delete
+      config.cart = config.cart.filter(c => !deleteCodes.includes(c))
+      write(config, CONFIG_FILEPATH)
     } else {
       console.log(`cart codes: ${config.cart.toString().green}`.grey)
     }
