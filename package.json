@@ -1,5 +1,5 @@
 {
-  "name": "oof",
+  "name": "@oof-man/oof",
   "version": "0.0.1",
   "license": "MIT",
   "dependencies": {
@@ -12,5 +12,9 @@
   },
   "bin": {
     "oof": "bin/oof.js"
-  }
+  },
+  "files": [
+    "bin/*.js",
+    "README.md"
+  ]
 }
