@@ -9,7 +9,6 @@ const inquirer = require('inquirer')
 const { write, read } = require('./fs')
 const fs = require('fs')
 const path = require('path')
-const { option } = require('commander')
 
 const USER_HOME = process.env.HOME || process.env.USERPROFILE
 const CONFIG_DIR = path.resolve(USER_HOME, './.oof')
@@ -73,18 +72,29 @@ program
 program
   .command('cart')
   .description('codes cart')
+  .option('-a, --add <codes...>', 'add cart codes')
+  .option('-d, --delete <codes...>', 'delete cart codes')
   .option('-l, --list', 'list cart codes')
-  .option('-d, --delete <codes...>')
   .action(async options => {
-    const config = await getConfig()
-    if (options.list) {
-      console.log(`cart codes: ${config.cart.toString().green}`.grey)
-    } else if (options.delete) {
-      const deleteCodes = options.delete
-      config.cart = config.cart.filter(c => !deleteCodes.includes(c))
-      write(config, CONFIG_FILEPATH)
-    } else {
-      console.log(`cart codes: ${config.cart.toString().green}`.grey)
+    try {
+      const config = await getConfig()
+      if (options.add) {
+        if (!validateCodes(options.add)) throw Error('Please check your code')
+        const addCodes = options.add
+        config.cart = [...new Set([...config.cart, ...addCodes])]
+      } else if (options.list) {
+        console.log(`cart codes: ${config.cart.toString().green}`.grey)
+      } else if (options.delete) {
+        if (!validateCodes(options.delete))
+          throw Error('Please check your code')
+        const deleteCodes = options.delete
+        config.cart = config.cart.filter(c => !deleteCodes.includes(c))
+        write(config, CONFIG_FILEPATH)
+      } else {
+        console.log(`cart codes: ${config.cart.toString().green}`.grey)
+      }
+    } catch (e) {
+      console.error(e.message.red)
     }
   })
 
@@ -94,18 +104,8 @@ async function fetchDetailByCodes(codes) {
   const table = []
   codes = codes
     .map(code => {
-      let prefix
-      if (CODE_MATCHER[EMUM_EXCHANGE.SZ].test(code)) {
-        prefix = 'sz'
-      } else if (CODE_MATCHER[EMUM_EXCHANGE.SH].test(code)) {
-        prefix = 'sh'
-      }
-
-      if (!prefix) {
-        console.log('code无效')
-        return null
-      }
-
+      const prefix = validateCode(code)
+      if (!prefix) throw Error('请检查code')
       return `${prefix}${code}`
     })
     .filter(Boolean)
@@ -170,4 +170,23 @@ async function getConfig() {
     console.error(e)
   }
   return config
+}
+
+function validateCode(code) {
+  let prefix
+  if (CODE_MATCHER[EMUM_EXCHANGE.SZ].test(code)) {
+    prefix = 'sz'
+  } else if (CODE_MATCHER[EMUM_EXCHANGE.SH].test(code)) {
+    prefix = 'sh'
+  }
+
+  if (!prefix) {
+    return null
+  }
+
+  return prefix
+}
+
+function validateCodes(codes) {
+  return codes.every(validateCode)
 }
