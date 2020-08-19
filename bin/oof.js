@@ -59,7 +59,7 @@ program
               }
               config.cart = [...new Set([...config.cart, ...codes])]
               write(config, CONFIG_FILEPATH)
-            } catch (error) {}
+            } catch (error) { }
           }
           while (true) {
             await fetchDetailByCodes(codes)
@@ -82,6 +82,7 @@ program
         if (!validateCodes(options.add)) throw Error('Please check your code')
         const addCodes = options.add
         config.cart = [...new Set([...config.cart, ...addCodes])]
+        write(config, CONFIG_FILEPATH)
       } else if (options.list) {
         console.log(`cart codes: ${config.cart.toString().green}`.grey)
       } else if (options.delete) {
